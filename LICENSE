@@ -1,25 +1,70 @@
-Copyright (c) 2026 Youkyung Mu. All Rights Reserved.
+Copyright (c) 2026 Yukyung Mu. All Rights Reserved.
 
-이 소프트웨어 및 관련 문서 파일("소프트웨어")은 저작권자가 명시적으로 서면 허가한
-경우를 제외하고 어떠한 목적으로도 사용, 복사, 수정, 배포, 재배포, 판매, 역공학,
-서브라이센스, 공개 게시를 금지합니다.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-이 소프트웨어는 오직 저작권자 본인만 사용할 수 있습니다.
-제3자는 저작권자의 명시적이고 서면으로 된 사전 허가 없이는 어떠한 형태로도
-이 소프트웨어에 접근하거나 이를 활용할 수 없습니다.
+PROPRIETARY SOFTWARE LICENSE
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
-DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THIS SOFTWARE.
+This software, including all source code, documentation, and associated files
+("Software"), is the exclusive intellectual property of Yukyung Mu ("Author").
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-PROPRIETARY AND CONFIDENTIAL
+1. RESTRICTIONS
 
-This software is the exclusive property of Youkyung Mu ("Owner").
-Unauthorized copying, distribution, modification, public display, or use
-of this software, in whole or in part, via any medium, is strictly prohibited
-without the prior written consent of the Owner.
+   All rights are reserved. No part of this Software may be:
 
-Any individual or entity found to be in violation of these terms will be
-subject to applicable legal action under copyright law.
+   - Used, executed, or run (in whole or in part) without prior written permission
+   - Copied, reproduced, or duplicated by any means
+   - Modified, adapted, translated, or used to create derivative works
+   - Distributed, sublicensed, sold, rented, or otherwise transferred
+   - Publicly displayed, published, or made available to third parties
+
+   Any of the above actions require explicit written authorization from the Author.
+
+2. PERMISSION REQUESTS
+
+   To request permission for any use of this Software, contact:
+
+     Author : Yukyung Mu
+     Email  : ykm3976@gmail.com
+     GitHub : github.com/DenimY
+
+   Permissions are granted solely at the Author's discretion and must be
+   confirmed in writing before any use begins.
+
+3. MANDATORY ATTRIBUTION
+
+   Any permitted use, reference, fork, or derivative work must prominently include
+   the following attribution in all copies, documentation, and public-facing materials:
+
+     "Based on work by Yukyung Mu — AI Agent-based Korean Stock Trading Bot"
+     Source: https://github.com/DenimY/trading-bot-semple
+
+   Attribution must not be removed, obscured, or misrepresented.
+
+4. DISCLAIMER OF WARRANTIES
+
+   THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+5. LIMITATION OF LIABILITY
+
+   IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE
+   OF OR INABILITY TO USE THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+   SUCH DAMAGE.
+
+   FINANCIAL DISCLAIMER: Any trading losses, errors in automated decisions, or
+   financial consequences resulting from the use of this Software are the sole
+   responsibility of the operator. The Author assumes no liability whatsoever.
+
+6. ENFORCEMENT
+
+   Unauthorized use of this Software constitutes copyright infringement and may
+   result in legal action under applicable copyright law, including the Digital
+   Millennium Copyright Act (DMCA) and international copyright treaties.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Last Updated: 2026-04-29
