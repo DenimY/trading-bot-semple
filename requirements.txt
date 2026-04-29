@@ -1,0 +1,20 @@
+streamlit>=1.32.0
+pandas>=2.0.0
+numpy>=1.24.0
+plotly>=5.18.0
+pykrx>=1.0.45
+python-dotenv>=1.0.0
+
+# AI 에이전트
+anthropic>=0.40.0
+
+# 백엔드 서버
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+websockets>=12.0
+
+# 스케줄러
+apscheduler>=3.10.0
+
+# 비동기 HTTP
+aiohttp>=3.9.0

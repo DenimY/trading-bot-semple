@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>트레이딩 봇 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f1117;
+      color: #e8eaf0;
+      min-height: 100vh;
+    }
+
+    /* ── 헤더 ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: #1b1e27;
+      border-bottom: 1px solid #2a2d3a;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
+    .mode-badge {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: #2563eb22;
+      color: #60a5fa;
+      border: 1px solid #2563eb55;
+    }
+    #btn-stop {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: opacity .15s;
+    }
+    #btn-stop:hover { opacity: 0.85; }
+    #btn-stop.stopped { background: #22c55e; }
+
+    /* ── 레이아웃 ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr 320px;
+      grid-template-rows: auto 1fr;
+      gap: 0;
+      height: calc(100vh - 57px);
+    }
+
+    /* ── 자산 요약 (전체 너비) ── */
+    .summary-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 1px;
+      background: #2a2d3a;
+      border-bottom: 1px solid #2a2d3a;
+    }
+    .metric {
+      flex: 1;
+      padding: 14px 20px;
+      background: #1b1e27;
+    }
+    .metric-label { font-size: 0.72rem; color: #8b8fa8; margin-bottom: 4px; }
+    .metric-value { font-size: 1.3rem; font-weight: 700; }
+    .up   { color: #f87171; }
+    .down { color: #60a5fa; }
+    .neutral { color: #e8eaf0; }
+
+    /* ── 사이드바: 보유 종목 ── */
+    .sidebar {
+      background: #1b1e27;
+      border-right: 1px solid #2a2d3a;
+      overflow-y: auto;
+      padding: 16px 0;
+    }
+    .sidebar h2 { font-size: 0.8rem; color: #8b8fa8; padding: 0 16px 10px; text-transform: uppercase; letter-spacing: .5px; }
+    .holding-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background .1s;
+    }
+    .holding-item:hover, .holding-item.active {
+      background: #23273a;
+      border-left-color: #3b82f6;
+    }
+    .holding-name { font-size: 0.9rem; font-weight: 600; }
+    .holding-ticker { font-size: 0.72rem; color: #8b8fa8; }
+    .holding-pnl { font-size: 0.85rem; font-weight: 600; margin-top: 2px; }
+
+    /* ── 차트 영역 ── */
+    .chart-area {
+      background: #13151f;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-bottom: 1px solid #2a2d3a;
+    }
+    .chart-title { font-size: 1rem; font-weight: 700; }
+    .chart-price { font-size: 1.4rem; font-weight: 800; }
+    .chart-change { font-size: 0.85rem; font-weight: 600; }
+    #chart { flex: 1; }
+
+    /* ── 오른쪽 패널: AI 로그 ── */
+    .agent-panel {
+      background: #1b1e27;
+      border-left: 1px solid #2a2d3a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .agent-panel h2 {
+      font-size: 0.8rem;
+      color: #8b8fa8;
+      padding: 14px 16px 10px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid #2a2d3a;
+    }
+    .agent-log { flex: 1; overflow-y: auto; padding: 12px 0; }
+    .log-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid #2a2d3a22;
+      font-size: 0.82rem;
+    }
+    .log-item-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .log-action {
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .log-action.BUY  { background: #f8717133; color: #f87171; }
+    .log-action.SELL { background: #60a5fa33; color: #60a5fa; }
+    .log-action.HOLD { background: #6b728033; color: #9ca3af; }
+    .log-ticker { color: #e8eaf0; font-weight: 600; }
+    .log-conf { color: #8b8fa8; font-size: 0.75rem; }
+    .log-reason { color: #9ca3af; line-height: 1.45; margin-top: 3px; }
+    .log-meta { font-size: 0.7rem; color: #4b5168; margin-top: 3px; }
+
+    .no-log { padding: 20px 14px; color: #4b5168; font-size: 0.82rem; }
+
+    /* ── 스크롤바 ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <h1>📈 트레이딩 봇</h1>
+    <span class="mode-badge" id="mode-badge">모의투자</span>
+  </div>
+  <div style="font-size:.8rem;color:#8b8fa8" id="market-status">장 시간 확인 중...</div>
+  <button id="btn-stop" onclick="toggleEmergencyStop()">비상 정지</button>
+</header>
+
+<div class="layout">
+  <!-- 자산 요약 -->
+  <div class="summary-bar">
+    <div class="metric">
+      <div class="metric-label">총자산</div>
+      <div class="metric-value neutral" id="m-total">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">평가손익</div>
+      <div class="metric-value" id="m-pnl">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">수익률</div>
+      <div class="metric-value" id="m-pct">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">예수금</div>
+      <div class="metric-value neutral" id="m-cash">—</div>
+    </div>
+  </div>
+
+  <!-- 보유 종목 -->
+  <aside class="sidebar">
+    <h2>보유 종목</h2>
+    <div id="holdings-list"><p style="padding:12px 16px;color:#4b5168;font-size:.82rem">보유 종목 없음</p></div>
+  </aside>
+
+  <!-- 캔들 차트 -->
+  <section class="chart-area">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title" id="chart-name">종목을 선택하세요</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:2px">
+          <span class="chart-price" id="chart-price"></span>
+          <span class="chart-change" id="chart-change"></span>
+        </div>
+      </div>
+    </div>
+    <div id="chart"></div>
+  </section>
+
+  <!-- AI 에이전트 로그 -->
+  <aside class="agent-panel">
+    <h2>AI 에이전트 판단</h2>
+    <div class="agent-log" id="agent-log">
+      <p class="no-log">에이전트 실행 대기 중...</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+// ── 차트 초기화 ─────────────────────────────────────────────
+const chartEl = document.getElementById('chart');
+const chart = LightweightCharts.createChart(chartEl, {
+  layout:     { background: { color: '#13151f' }, textColor: '#8b8fa8' },
+  grid:       { vertLines: { color: '#1e2130' }, horzLines: { color: '#1e2130' } },
+  crosshair:  { mode: LightweightCharts.CrosshairMode.Normal },
+  rightPriceScale: { borderColor: '#2a2d3a' },
+  timeScale:  { borderColor: '#2a2d3a', timeVisible: true, secondsVisible: false },
+});
+const candleSeries = chart.addCandlestickSeries({
+  upColor: '#f87171', downColor: '#60a5fa',
+  borderUpColor: '#f87171', borderDownColor: '#60a5fa',
+  wickUpColor: '#f87171', wickDownColor: '#60a5fa',
+});
+
+// 차트 크기 반응형
+new ResizeObserver(() => {
+  chart.applyOptions({ width: chartEl.offsetWidth, height: chartEl.offsetHeight });
+}).observe(chartEl);
+
+// ── 상태 ──────────────────────────────────────────────────
+let state = { holdings: [], cash: 0, total_assets: 0, total_pnl: 0, total_pnl_pct: 0 };
+let prices = {};       // ticker → price
+let activeTicker = null;
+let emergencyStop = false;
+
+// ── WebSocket ─────────────────────────────────────────────
+const API_PORT = 8006;
+const API_HOST = `${location.hostname}:${API_PORT}`;
+const ws = new WebSocket(`ws://${API_HOST}/ws`);
+
+ws.onmessage = ({ data }) => {
+  const msg = JSON.parse(data);
+
+  if (msg.type === 'snapshot') {
+    updatePortfolio(msg);
+
+  } else if (msg.type === 'price') {
+    prices[msg.ticker] = msg.price;
+    updateHoldingPrice(msg.ticker, msg.price);
+    if (msg.ticker === activeTicker) updateChartHeader(msg.ticker, msg.price);
+
+  } else if (msg.type === 'agent_decision') {
+    addAgentLog(msg);
+
+  } else if (msg.type === 'risk_action') {
+    addAgentLog({ action: 'SELL', ticker: '리스크', reason: msg.message,
+                  confidence: 100, tier: 0, ts: new Date().toISOString() });
+
+  } else if (msg.type === 'emergency') {
+    alert(msg.message);
+  }
+};
+
+ws.onclose = () => console.log('WS 연결 종료');
+
+// ── 포트폴리오 렌더 ───────────────────────────────────────
+function fmt(n)    { return n.toLocaleString('ko-KR') + '원'; }
+function fmtPct(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+function cls(n)    { return n >= 0 ? 'up' : 'down'; }
+
+function updatePortfolio(snap) {
+  state = snap;
+  document.getElementById('m-total').textContent = fmt(snap.total_assets);
+
+  const pnlEl = document.getElementById('m-pnl');
+  pnlEl.textContent = fmt(snap.total_pnl);
+  pnlEl.className = 'metric-value ' + cls(snap.total_pnl);
+
+  const pctEl = document.getElementById('m-pct');
+  pctEl.textContent = fmtPct(snap.total_pnl_pct);
+  pctEl.className = 'metric-value ' + cls(snap.total_pnl_pct);
+
+  document.getElementById('m-cash').textContent = fmt(snap.cash);
+
+  renderHoldings(snap.holdings);
+}
+
+function renderHoldings(holdings) {
+  const el = document.getElementById('holdings-list');
+  if (!holdings.length) {
+    el.innerHTML = '<p style="padding:12px 16px;color:#4b5168;font-size:.82rem">보유 종목 없음</p>';
+    return;
+  }
+  el.innerHTML = holdings.map(h => `
+    <div class="holding-item ${h.ticker === activeTicker ? 'active' : ''}"
+         onclick="selectTicker('${h.ticker}','${h.name}')">
+      <div class="holding-name">${h.name}</div>
+      <div class="holding-ticker">${h.ticker} · ${h.quantity}주</div>
+      <div class="holding-pnl ${cls(h.pnl_pct)}" id="pnl-${h.ticker}">
+        ${fmtPct(h.pnl_pct)} · ${(h.pnl >= 0 ? '+' : '') + h.pnl.toLocaleString('ko-KR')}원
+      </div>
+    </div>`).join('');
+}
+
+function updateHoldingPrice(ticker, price) {
+  // 보유 종목이면 손익 실시간 갱신
+  const h = state.holdings?.find(x => x.ticker === ticker);
+  if (!h) return;
+  const pnl    = (price - h.avg_price) * h.quantity;
+  const pnlPct = (price - h.avg_price) / h.avg_price * 100;
+  const el = document.getElementById(`pnl-${ticker}`);
+  if (el) {
+    el.textContent = `${fmtPct(pnlPct)} · ${(pnl >= 0 ? '+' : '') + pnl.toLocaleString('ko-KR')}원`;
+    el.className = 'holding-pnl ' + cls(pnlPct);
+  }
+}
+
+// ── 차트 ──────────────────────────────────────────────────
+async function selectTicker(ticker, name) {
+  activeTicker = ticker;
+  document.getElementById('chart-name').textContent = `${name} (${ticker})`;
+  document.querySelectorAll('.holding-item').forEach(el => el.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+
+  const res = await fetch(`http://${API_HOST}/api/candles/${ticker}`);
+  const { candles } = await res.json();
+  const data = candles.map(c => ({
+    time:  Math.floor(new Date(c.ts).getTime() / 1000),
+    open:  c.open, high: c.high, low: c.low, close: c.close,
+  })).sort((a, b) => a.time - b.time);
+
+  candleSeries.setData(data);
+  chart.timeScale().fitContent();
+
+  const price = prices[ticker];
+  if (price) updateChartHeader(ticker, price);
+}
+
+function updateChartHeader(ticker, price) {
+  document.getElementById('chart-price').textContent = price.toLocaleString('ko-KR') + '원';
+
+  // 차트 마지막 봉 갱신
+  candleSeries.update({
+    time:  Math.floor(Date.now() / 1000 / 60) * 60,
+    open:  price, high: price, low: price, close: price,
+  });
+}
+
+// ── AI 에이전트 로그 ─────────────────────────────────────
+function addAgentLog(d) {
+  const el = document.getElementById('agent-log');
+  const noLog = el.querySelector('.no-log');
+  if (noLog) noLog.remove();
+
+  const time = new Date(d.ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = `
+    <div class="log-item-header">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="log-action ${d.action}">${d.action}</span>
+        <span class="log-ticker">${d.ticker}</span>
+        ${d.quantity ? `<span style="color:#8b8fa8;font-size:.75rem">${d.quantity}주</span>` : ''}
+      </div>
+      <span class="log-conf">신뢰도 ${d.confidence}%</span>
+    </div>
+    <div class="log-reason">${d.reason}</div>
+    <div class="log-meta">${time} · Tier${d.tier} · ${d.model?.includes('haiku') ? 'Haiku' : 'Sonnet'}</div>`;
+
+  el.insertBefore(item, el.firstChild);
+
+  // 최대 50개 유지
+  while (el.children.length > 50) el.removeChild(el.lastChild);
+}
+
+// ── 비상 정지 ─────────────────────────────────────────────
+async function toggleEmergencyStop() {
+  emergencyStop = !emergencyStop;
+  await fetch(`http://${API_HOST}/api/emergency-stop`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ active: emergencyStop }),
+  });
+  const btn = document.getElementById('btn-stop');
+  if (emergencyStop) {
+    btn.textContent = '봇 재시작';
+    btn.classList.add('stopped');
+  } else {
+    btn.textContent = '비상 정지';
+    btn.classList.remove('stopped');
+  }
+}
+
+// ── 초기 로드 ─────────────────────────────────────────────
+async function init() {
+  const [portRes, statusRes] = await Promise.all([
+    fetch(`http://${API_HOST}/api/portfolio`),
+    fetch(`http://${API_HOST}/api/status`),
+  ]);
+  const snap   = await portRes.json();
+  const status = await statusRes.json();
+
+  updatePortfolio(snap);
+  emergencyStop = status.emergency_stop;
+
+  const badge = document.getElementById('mode-badge');
+  badge.textContent = status.mode === 'real' ? '실투자' : '모의투자';
+  badge.style.color = status.mode === 'real' ? '#f87171' : '#60a5fa';
+
+  const mktEl = document.getElementById('market-status');
+  mktEl.textContent = status.market_open ? '🟢 장 중' : '🔴 장 마감';
+
+  if (emergencyStop) {
+    document.getElementById('btn-stop').textContent = '봇 재시작';
+    document.getElementById('btn-stop').classList.add('stopped');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
